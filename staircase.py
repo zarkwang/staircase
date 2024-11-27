@@ -35,7 +35,7 @@ class staircase:
 
     def run(self,n_iter=1000):
 
-        result_cols = ['iter','prop_up','prop_init','prop_down','p_fisher_up','p_fisher_down','p_fisher_total']
+        result_cols = ['iter','prop_up','prop_init','prop_down','p_fisher']
 
         result = {col:[] for col in result_cols}
 
@@ -65,26 +65,31 @@ class staircase:
 
             # 2x2 contingency table [ [a, b], [c, d] ]
             # where 'a' and 'b' are counts for one group, and 'c' and 'd' for another.
-            tab_1 = np.array([[n_up_choice_1,n_up_choice_0],
-                            [n_choice_1,n_choice_0]])
+            # tab_1 = np.array([[n_up_choice_1,n_up_choice_0],
+            #                 [n_choice_1,n_choice_0]])
 
-            tab_2 = np.array([[n_choice_1,n_choice_0],
+            # tab_2 = np.array([[n_choice_1,n_choice_0],
+            #                 [n_down_choice_1,n_down_choice_0]])
+            
+            tab_3 = np.array([[n_up_choice_1,n_up_choice_0],
                             [n_down_choice_1,n_down_choice_0]])
+            
+            odds_1, p_1 = stats.fisher_exact(tab_3, alternative='less')
 
-            odds_1, p_1 = stats.fisher_exact(tab_1, alternative='less')
-            odds_2, p_2 = stats.fisher_exact(tab_2, alternative='less')
+            # odds_1, p_1 = stats.fisher_exact(tab_1, alternative='less')
+            # odds_2, p_2 = stats.fisher_exact(tab_2, alternative='less')
 
             result['iter'] += [i]
             result['prop_up'] += [n_up_choice_1/n_choice_0]
             result['prop_init'] += [n_choice_1/self.n_subjects]
             result['prop_down'] += [n_down_choice_1/n_choice_1]
-            result['p_fisher_up'] += [p_1]
-            result['p_fisher_down'] += [p_2]
-            result['p_fisher_total'] += [min(min(sorted([p_1,p_2])*np.array([2,1])),1)]
+            result['p_fisher'] += [p_1]
+            # result['p_fisher_down'] += [p_2]
+            # result['p_fisher_total'] += [min(min(sorted([p_1,p_2])*np.array([2,1])),1)]
 
 
         self.result = pd.DataFrame(result)
-        self.prop_reject_null = sum(self.result['p_fisher_total'] < 0.05) / n_iter
+        self.prop_reject_null = sum(self.result['p_fisher'] < 0.05) / n_iter
 
 
 

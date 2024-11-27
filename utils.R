@@ -17,8 +17,9 @@ run_prop_test <- function(tab_levels){
   # t1 <- prop.test(x=c(q_lo,q_0),n=c(n_lo,n_0),alternative = 'less')
   # t2 <- prop.test(x=c(q_0,q_hi),n=c(n_0,n_hi),alternative = 'less')
   
-  matrix_1 <- matrix(c(q_lo,q_0,n_lo,n_0),nrow=2)
-  matrix_2 <- matrix(c(q_0,q_hi,n_0,n_hi),nrow=2)
+  matrix_1 <- matrix(c(q_lo,q_0,n_lo-q_lo,n_0-q_0),nrow=2)
+  matrix_2 <- matrix(c(q_0,q_hi,n_0-q_0,n_hi-q_hi),nrow=2)
+  
   
   t1 <- fisher.test(matrix_1, alternative = 'less')
   t2 <- fisher.test(matrix_2, alternative = 'less')
@@ -111,7 +112,5 @@ freq_2 <- table(AR$choice1)[4]/sum(table(AR$choice1)[3:4])
 freq_3 <- table(AR$choice1)[2]/sum(table(AR$choice1)[1:2])
 
 c(freq_1,freq_2,freq_3)
-
-
 
 

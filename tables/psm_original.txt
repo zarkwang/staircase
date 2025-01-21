@@ -1,0 +1,34 @@
+\documentclass[12pt]{article}
+\usepackage{subcaption}
+\begin{document}
+
+\begin{table}
+    \captionsetup[sub]{singlelinecheck=false}
+    \caption{Regression results for the Preference Survey Module}
+    \vspace*{12pt}
+    
+    \begin{subtable}{\textwidth}
+        \centering
+        \captionsetup{justification=centering}
+        \caption*{Panel A: Willingness to take risks} 
+       % INSERT psm_risk_tab
+    \end{subtable}
+    
+    \vspace*{12pt}
+
+    \begin{subtable}{\textwidth}
+        \centering
+        \captionsetup{justification=centering}
+        \caption*{Panel B: Willingness to wait}
+        % INSERT psm_time_tab
+    \end{subtable} 
+
+    \vspace*{4pt}
+    \centering
+    \begin{minipage}{0.85\textwidth}
+    {\par\footnotesize Note: * $p<0.05$, ** $p<0.01$, *** $p<0.001$. All estimates are obtained using OLS regression. Standard errors are reported in the parentheses. The intercept and control variables are omitted. For willingness to take risks, the control variables are 42 other items in the risk attitude scale. For willingness to wait, the control variables are 37 other items in the time attitude scale.}
+    \end{minipage}
+    \label{tab:psm}
+\end{table}
+
+\end{document}

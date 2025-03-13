@@ -1,0 +1,36 @@
+\documentclass[12pt]{article}
+\usepackage{subcaption}
+\begin{document}
+
+\begin{table}
+    \captionsetup[sub]{singlelinecheck=false}
+    \caption{Predicting Risk-Taking Behavior in Preference Survey Module - Comparison between Regressions Using Utility Curvature Parameter and Encoding of Choice Path}
+    \vspace*{12pt}
+    
+    \begin{subtable}{\textwidth}
+        \centering
+        \captionsetup{justification=centering}
+        \caption*{Panel A: Risk preference measured by incentivized choices} 
+      % \begin{tabular*}{0.8\textwidth}{@{\extracolsep{\fill}}lccc}
+       % INSERT psm_risk_encode_1
+    \end{subtable}
+    
+    \vspace*{12pt}
+
+    \begin{subtable}{\textwidth}
+        \centering
+        \captionsetup{justification=centering}
+        \caption*{Panel B: Willingness to take risks}
+      % \begin{tabular*}{0.8\textwidth}{@{\extracolsep{\fill}}lccc}
+        % INSERT psm_risk_encode_2
+    \end{subtable} 
+
+    \vspace*{4pt}
+    \centering
+    \begin{minipage}{0.85\textwidth}
+    {\par\footnotesize Note: * $p<0.05$, ** $p<0.01$, *** $p<0.001$. All estimates are obtained using OLS regression. Robust standard errors are reported in the parentheses. Panel captions indicate the depdendent variables. For Panel B, the dependent variable is the first principal component of the ratings on willingness to take risks. The observations include only participants who exhibit risk-averse behavior. }
+    \end{minipage}
+    \label{tab:psm_risk_encode}
+\end{table}
+
+\end{document}

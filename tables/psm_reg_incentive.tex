@@ -1,0 +1,64 @@
+\documentclass[12pt]{article}
+\usepackage{subcaption}
+\begin{document}
+
+\begin{table}
+    \captionsetup[sub]{singlelinecheck=false}
+    \caption{Reanalysis of Preference Survey Module - Regress Incentivized-Choice-Elicited Preferences on Individual-Level Parameters}
+    \vspace*{12pt}
+    
+    \begin{subtable}{\textwidth}
+        \centering
+        \captionsetup{justification=centering}
+        \caption*{Panel A: Risk Preference Measure} 
+      % \begin{tabular*}{0.8\textwidth}{@{\extracolsep{\fill}}lccc}
+       \begin{tabular}{llll}
+\hline
+ & (1) & (2) & (3) \\
+\hline
+risk-seeking &  & -11.561$^{*}$ & -9.759 \\
+ &  & (5.482) & (5.548) \\
+$\gamma$ &  & -7.814$^{***}$ & -4.215 \\
+ &  & (2.413) & (2.773) \\
+$\gamma \times$ risk-seeking &  & 24.456$^{*}$ & 19.797$^{*}$ \\
+ &  & (9.793) & (9.952) \\
+controls & Yes & No & Yes \\
+observations & 382 & 382 & 382 \\
+adj.$R^2$ & 0.131 & 0.095 & 0.159 \\
+AIC & 1919.791 & 1899.088 & 1909.802 \\
+\hline
+\end{tabular}
+% INSERT psm_risk_incentive
+    \end{subtable}
+    
+    \vspace*{12pt}
+
+    \begin{subtable}{\textwidth}
+        \centering
+        \captionsetup{justification=centering}
+        \caption*{Panel B: Time Preference Measure}
+      % \begin{tabular*}{0.8\textwidth}{@{\extracolsep{\fill}}lccc}
+        \begin{tabular}{llll}
+\hline
+ & (1) & (2) & (3) \\
+\hline
+discount factor $\delta$ &  & 38.984$^{***}$ & 35.988$^{***}$ \\
+ &  & (4.305) & (4.751) \\
+controls & Yes & No & Yes \\
+observations & 341 & 341 & 341 \\
+adj.$R^2$ & 0.11 & 0.178 & 0.254 \\
+AIC & 2329.122 & 2267.991 & 2269.798 \\
+\hline
+\end{tabular}
+% INSERT psm_time_incentive
+    \end{subtable} 
+
+    \vspace*{4pt}
+    \centering
+    \begin{minipage}{0.85\textwidth}
+    {\par\footnotesize Note: * $p<0.05$, ** $p<0.01$, *** $p<0.001$. All estimates are obtained using OLS regression. Robust standard errors are reported in the parentheses. The intercept and control variables are omitted in the table. The depdendent variables are preference measures constructed by \cite{falk2023preference}. For risk preference measure, the control variables are all 42 items (except the ratings for general willingness to take risks) in the risk attitude scale. For time preference measure, the control variables are all 37 items  (except the ratings for general willingness to wait) in the time attitude scale.}
+    \end{minipage}
+    \label{tab:psm_incentive}
+\end{table}
+
+\end{document}

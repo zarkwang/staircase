@@ -8,6 +8,7 @@ import copy
 import os
 import multiprocessing as mp
 from utils import *
+from tobit import *
 
 
 # -----------------------------
@@ -70,11 +71,25 @@ class choiceModel:
         Fixed arguments, such as {'riskCoef':3, 'temp': 2} 
         '''
 
+    @staticmethod
+    def get_encode(input):
+       '''
+        Each inidvidual is assigned a value to encode the choice path
+        If all choices are 0, the individual will be encoded by the lowest encode 1
+        Input is the matrix of choice data
+       '''
+       encode_choice = lambda row: from_choice_to_encode(2**input.shape[1], row.tolist())
+       return np.apply_along_axis(encode_choice, axis=1, arr=input)
+
     def set_init_param(self, param_init=None, param_keys=None, weight=None):
 
         self.param_init = param_init
         self.param_keys = param_keys
-        self.sample_weight = weight
+
+        if weight is not None:
+            self.sample_weight = (weight / sum(weight)) * len(self.choice)
+        else:
+            self.sample_weight = None
 
         if 'delta' not in param_keys:
             self.fixed_args = self.fixed_args | {'delta':1}
@@ -153,7 +168,7 @@ class choiceModel:
         return logLogit @ w
         
 
-    def fit_param(self,bounds=None):
+    def fit_param(self,bounds=None,show=True):
 
         obj = lambda coefs: - self.logLike(coefs)*1000
 
@@ -161,7 +176,29 @@ class choiceModel:
 
         self.result = optimize.minimize(obj, x0, method='L-BFGS-B', bounds=bounds)
 
-        return self.result
+        if show:
+            print(self.result)
+    
+    def predict_const(self,new_like):
+
+        # new_like: likelihood of each choice calculated based the newly estimated parameters
+
+        n_question = self.choice.shape[1]
+
+        self.pred = new_like > 0.5
+
+        if self.sample_weight is not None:
+            w = (self.sample_weight / sum(self.sample_weight))[:,np.newaxis] / n_question
+        else:
+            w = np.tile(1/self.pred.size, self.pred.shape) 
+
+        accuracy = np.sum(((self.pred - self.choice) == 0) * w)
+        rmse = np.sum((new_like - self.choice)**2 * w)
+        cross_ent = np.sum((np.log(new_like) * self.choice  + np.log(1 - new_like) * (1 - self.choice)) * w)
+             
+        pred_result = {'accuracy': accuracy,'RMSE': rmse, 'cross-entropy': - cross_ent}
+
+        return pred_result
     
 
 class mixedDiscrete(choiceModel):
@@ -207,7 +244,7 @@ class mixedDiscrete(choiceModel):
             print('Initial setting:', self.latent_class)
 
 
-    def likeIndiv(self,latent_class: dict):
+    def likeIndiv(self,latent_class: dict,keep_original=False):
 
         mat_shape = np.append(np.array(self.choice.shape),0)
 
@@ -221,9 +258,13 @@ class mixedDiscrete(choiceModel):
             all_args = self.fixed_args | new_args
         
             p = self.choiceProb(all_args)
-            y = self.choice
-            logLogit = y*p + (1-y)*(1-p)
-            prob = np.concatenate((prob, logLogit[:, :, np.newaxis]), axis=2) 
+            
+            if not keep_original:
+                y = self.choice
+                logLogit = y*p + (1-y)*(1-p)
+                prob = np.concatenate((prob, logLogit[:, :, np.newaxis]), axis=2) 
+            else:
+                prob = np.concatenate((prob, p[:, :, np.newaxis]), axis=2)
 
         return prob
 
@@ -248,7 +289,12 @@ class mixedDiscrete(choiceModel):
     def updateShare(self):
 
         post_prob = self.postProbLatent()
-        new_share = post_prob.sum(axis=0) / post_prob.sum()
+
+        if self.sample_weight is not None:
+            adj_post_prob = post_prob * self.sample_weight[:,np.newaxis]
+            new_share = adj_post_prob.sum(axis=0) / adj_post_prob.sum()
+        else:
+            new_share = post_prob.sum(axis=0) / post_prob.sum()
 
         self.post_prob = post_prob
         self.latent_share = new_share
@@ -295,6 +341,7 @@ class mixedDiscrete(choiceModel):
             print('Class share', new_share)
             print('Class parameter', new_param)
             print('objective', np.round(new_obj,3))
+            print(self.eval())
 
         while i < max_iter and abs(sum(new_obj) - sum(old_obj)) > tol:
             self.updateShare()
@@ -311,17 +358,33 @@ class mixedDiscrete(choiceModel):
                 print('Class share', new_share)
                 print('Class parameter', new_param)
                 print('objective', np.round(new_obj,3))
+                print(self.eval())
     
 
     def eval(self):
 
-        choiceProb = self.likeIndiv(self.latent_class).prod(axis=1)
+        if self.sample_weight is not None:
+            post_w = (self.post_prob * self.sample_weight[:,np.newaxis]).sum(axis=0)
+        else:
+            post_w = self.post_prob.sum(axis=0)
 
         latent_share = np.array(self.latent_share)
 
-        eval_func = - choiceProb.sum(axis=0) @ np.log(latent_share) + sum(self.obj_values)
+        eval_func = - post_w @ np.log(latent_share) + sum(self.obj_values)
 
         return eval_func
+    
+    def predict(self,const_model=False):
+
+        if hasattr(self, 'latent_class') and const_model==False:
+            new_like = (self.likeIndiv(self.latent_class,keep_original=True) * self.post_prob[:,np.newaxis]).sum(axis=2)   
+            pred_result = self.predict_const(new_like)
+        else:
+            all_args = self.fixed_args | dict(zip(self.param_keys, self.result.x))
+            new_like = self.choiceProb(all_args)
+            pred_result = self.predict_const(new_like)
+
+        return pred_result
 
 
 # Model fitting results depend on initial points
@@ -359,6 +422,9 @@ def get_best_result(model, bounds, n_class, n_init_point,
     file_name = f"{name_prefix}_class_{n_class}"
     if name_suffix:
         file_name += f"_{name_suffix}.pkl"
+    else:
+        file_name += f".pkl"
+
     with open(file_name, 'wb') as f:
         pickle.dump(best_model, f)
 
@@ -366,7 +432,7 @@ def get_best_result(model, bounds, n_class, n_init_point,
 
 
 def bisection_search(model, bounds, n_class, n_init_point, 
-                     name_prefix, arg_name, arg_range, tol = 1e-3, max_iter =300, stop_search = 10):
+                     name_prefix, arg_name, arg_range, search_tol = 1e-2, max_iter =300, stop_search = 10):
     '''
     Search for the value of a constant arg, to minimize the model evaluation metric
     '''
@@ -376,7 +442,7 @@ def bisection_search(model, bounds, n_class, n_init_point,
 
     print(f'Searching optimal value for {arg_name}')
 
-    while i<stop_search and (upper - lower > tol):
+    while i<stop_search and (upper - lower > search_tol):
         m1 = lower + (upper - lower) / 3
         m2 = upper - (upper - lower) / 3
 
@@ -549,6 +615,12 @@ class mixedNormal(choiceModel):
         
         return like_indiv
     
+    def objEM(self,const):
+
+        obj_func = - np.sum(self.w * np.log(self.likeIndiv(const))) / self.n_random
+
+        return obj_func
+    
     
     def updateMetaParam(self):
 
@@ -581,7 +653,7 @@ class mixedNormal(choiceModel):
 
         self.getGradient(params_deviation,out)
 
-        self.obj_func = - np.sum(self.w * np.log(self.likeIndiv(const))) / self.n_random
+        self.obj_func = self.objEM(const)
 
         return self.meta_param
     
@@ -629,17 +701,16 @@ class mixedNormal(choiceModel):
 
     def updateConstantParam(self,bounds):
         
-        obj = lambda const: - np.sum(self.w * np.log(self.likeIndiv(const)))
         init = list(self.constant_param.values())
 
-        result = optimize.minimize(obj, init, method='L-BFGS-B', bounds=bounds)
+        result = optimize.minimize(self.objEM, init, method='L-BFGS-B', bounds=bounds)
 
         self.constant_param = dict(zip(self.constant_param.keys(), result.x))
 
         return result.fun
     
 
-    def runEM(self,min_iter=1,max_iter=500,tol=100,excess_step=30,bounds=None):
+    def runEM(self,min_iter=10,max_iter=500,tol=1,excess_step=30,bounds=None):
 
         # expectation-maximization (EM) algorithm
         i = 1
@@ -657,9 +728,11 @@ class mixedNormal(choiceModel):
         self.optim_func = new_obj
         self.optim_w = copy.deepcopy(self.w)
         self.optim_metaparam = copy.deepcopy(self.meta_param)
+
+        const = list(self.constant_param.values())
         
 
-        if len(self.constant_param) > 0:
+        if len(const) > 0:
             new_const_obj = self.updateConstantParam(bounds)
             print('constants:',self.constant_param)
             print('const_obj:',new_const_obj)
@@ -668,8 +741,11 @@ class mixedNormal(choiceModel):
         
         self.random_params = {key: None for key in self.param_keys}
 
-        while i < min_iter or (i < max_iter and i < (self.optim_i + excess_step) and 
-            new_obj < (self.optim_func + tol) or new_obj == np.inf):
+        while i < min_iter or \
+            (i < max_iter and i < (self.optim_i + excess_step) and 
+            (new_obj < (self.optim_func + tol) or new_obj == np.inf) and \
+            abs(new_const_obj - old_const_obj) < tol):
+             
             i += 1
 
             self.updateMetaParam()
@@ -687,8 +763,9 @@ class mixedNormal(choiceModel):
                 self.optim_metaparam = copy.deepcopy(self.meta_param)
                 
 
-            if len(self.constant_param) > 0:
-                new_obj = self.updateConstantParam(bounds)
+            if len(const) > 0:
+                old_const_obj = new_const_obj
+                new_const_obj = self.updateConstantParam(bounds)
                 print('constants:',self.constant_param)
                 print('const_obj:',new_const_obj)
             else:
@@ -697,7 +774,7 @@ class mixedNormal(choiceModel):
             self.random_params = {key: None for key in self.param_keys}
 
     
-    def simuIndivParam(self,optim=False):
+    def simuIndivParam(self,optim=True):
         
         self.gen_random_params(self.n_random, clear=True, optim=optim)
 
@@ -723,37 +800,40 @@ class mixedNormal(choiceModel):
         return indiv_params
     
 
-
-
-
-
         
 
-
+    def choiceProbBatch(self,constant_params=None):
         
+        all_params = self.genAllParams(constant_params)
 
+        p = self.choiceProb(all_params)
 
-
+        return p
     
 
+    def choicePred(self,optim=True):
 
-    
-    
+        const = list(self.constant_param.values())
+        self.random_params = {key: None for key in self.param_keys}
 
+        i = 1
+        like_indiv_simu = self.choiceProbBatch(const)
 
+        while i < self.n_batch:
+            new_like = self.choiceProbBatch(const)
+            like_indiv_simu = np.concatenate((like_indiv_simu, new_like), axis=2)
+            i += 1
         
+        if optim:
+            _w = self.optim_w
+        else:
+            _w = self.w
 
+        if self.sample_weight is not None:
+            w = _w / self.sample_weight[:,np.newaxis]
+        else:
+            w = _w
 
+        like = (like_indiv_simu * np.expand_dims(w,axis=0)).mean(axis=2).T
 
-
-
-
-
-
-
-
-
-
-
-
-    
+        return self.predict_const(like)

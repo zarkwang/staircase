@@ -1,0 +1,36 @@
+\documentclass[12pt]{article}
+\usepackage{subcaption}
+\begin{document}
+
+\begin{table}
+    \captionsetup[sub]{singlelinecheck=false}
+    \caption{Reanalysis on the Relationship between Probability Distortion and Portfolio Underdiversification}
+    \vspace*{12pt}
+    
+      \begin{subtable}{\textwidth}
+        \centering
+        \captionsetup{justification=centering}
+        \caption*{Panel A: Ratio of equity invested in individual stocks} 
+      % \begin{tabular*}{0.8\textwidth}{@{\extracolsep{\fill}}lccc}
+       % INSERT probWeigh_tab_ratio
+    \end{subtable}
+    
+    \vspace*{12pt}
+
+    \begin{subtable}{\textwidth}
+        \centering
+        \captionsetup{justification=centering}
+        \caption*{Panel B: Probability distortion measure \emph{Inverse-S}}
+      % \begin{tabular*}{0.8\textwidth}{@{\extracolsep{\fill}}lccc}
+        % INSERT probWeigh_tab_prob
+    \end{subtable} 
+
+    \vspace*{4pt}
+    \centering
+    \begin{minipage}{0.85\textwidth}
+    {\par\footnotesize Note: * $p<0.05$, ** $p<0.01$, *** $p<0.001$. All estimates are obtained through WLS regression (using the ALP sample weights). Robust standard errors are reported in the parentheses. The intercept and control variables are omitted in the table. Control variables include gender, age, age squared, number of household members, family income, approximated financial wealth, financial literacy, numeracy, trust, optimism, as well as dummies for white, hispanic, marriage, employment, no college degree, bachelor degree, master and above, gambling behavior, and missing value.}
+    \end{minipage}
+    \label{tab:probweigh_reg}
+\end{table}
+
+\end{document}

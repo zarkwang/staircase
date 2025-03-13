@@ -1,0 +1,37 @@
+\documentclass[12pt]{article}
+\usepackage{subcaption}
+\begin{document}
+
+\begin{table}
+    \captionsetup[sub]{singlelinecheck=false}
+    \caption{Robustness Check on Preference Survey Module - Regress Willingness Indices on Individual-Level Parameters}
+    \vspace*{12pt}
+    
+    \begin{subtable}{\textwidth}
+        \centering
+        \captionsetup{justification=centering}
+        \caption*{Panel A: Willingness to take risks} 
+       % \begin{tabular*}{0.8\textwidth}{@{\extracolsep{\fill}}lccc}
+       % INSERT psm_risk_willingness
+      
+    \end{subtable}
+    
+    \vspace*{12pt}
+
+    \begin{subtable}{\textwidth}
+        \centering
+        \captionsetup{justification=centering}
+        \caption*{Panel B: Willingness to wait}
+        % \begin{tabular*}{0.8\textwidth}{@{\extracolsep{\fill}}lccc}
+        % INSERT psm_time_willingness
+    \end{subtable} 
+
+    \vspace*{4pt}
+    \centering
+    \begin{minipage}{0.85\textwidth}
+    {\par\footnotesize Note: * $p<0.05$, ** $p<0.01$, *** $p<0.001$. All estimates are obtained using OLS regression. Robust standard errors are reported in the parentheses. The intercept and control variables are omitted. The depdendent variables are the first principal components for the ratings on willingness to take risks and to wait. For willingness to take risks, the control variables are 42 other items in the risk attitude scale. For willingness to wait, the control variables are 37 other items in the time attitude scale.}
+    \end{minipage}
+    \label{tab:psm}
+\end{table}
+
+\end{document}

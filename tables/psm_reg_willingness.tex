@@ -1,0 +1,65 @@
+\documentclass[12pt]{article}
+\usepackage{subcaption}
+\begin{document}
+
+\begin{table}
+    \captionsetup[sub]{singlelinecheck=false}
+    \caption{Robustness Check on Preference Survey Module - Regress Willingness Indices on Individual-Level Parameters}
+    \vspace*{12pt}
+    
+    \begin{subtable}{\textwidth}
+        \centering
+        \captionsetup{justification=centering}
+        \caption*{Panel A: Willingness to take risks} 
+       % \begin{tabular*}{0.8\textwidth}{@{\extracolsep{\fill}}lccc}
+       \begin{tabular}{llll}
+\hline
+ & (1) & (2) & (3) \\
+\hline
+risk-seeking &  & -10.856 & -2.337 \\
+ &  & (8.333) & (5.782) \\
+$\gamma$ &  & -13.123$^{***}$ & -7.053$^{*}$ \\
+ &  & (3.373) & (3.046) \\
+$\gamma \times$ risk-seeking &  & 25.351 & 8.043 \\
+ &  & (14.984) & (10.513) \\
+controls & Yes & No & Yes \\
+observations & 394 & 394 & 394 \\
+adj.$R^2$ & 0.535 & 0.09 & 0.562 \\
+AIC & 2081.208 & 2309.158 & 2060.216 \\
+\hline
+\end{tabular}
+% INSERT psm_risk_willingness
+      
+    \end{subtable}
+    
+    \vspace*{12pt}
+
+    \begin{subtable}{\textwidth}
+        \centering
+        \captionsetup{justification=centering}
+        \caption*{Panel B: Willingness to wait}
+        % \begin{tabular*}{0.8\textwidth}{@{\extracolsep{\fill}}lccc}
+        \begin{tabular}{llll}
+\hline
+ & (1) & (2) & (3) \\
+\hline
+discount factor $\delta$ &  & 20.7$^{***}$ & 15.087$^{***}$ \\
+ &  & (2.586) & (2.297) \\
+controls & Yes & No & Yes \\
+observations & 353 & 353 & 353 \\
+adj.$R^2$ & 0.386 & 0.155 & 0.464 \\
+AIC & 1883.973 & 1962.824 & 1837.04 \\
+\hline
+\end{tabular}
+% INSERT psm_time_willingness
+    \end{subtable} 
+
+    \vspace*{4pt}
+    \centering
+    \begin{minipage}{0.85\textwidth}
+    {\par\footnotesize Note: * $p<0.05$, ** $p<0.01$, *** $p<0.001$. All estimates are obtained using OLS regression. Robust standard errors are reported in the parentheses. The intercept and control variables are omitted. The depdendent variables are the first principal components for the ratings on willingness to take risks and to wait. For willingness to take risks, the control variables are 42 other items in the risk attitude scale. For willingness to wait, the control variables are 37 other items in the time attitude scale.}
+    \end{minipage}
+    \label{tab:psm}
+\end{table}
+
+\end{document}

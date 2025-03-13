@@ -39,15 +39,47 @@ if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(script_dir)
 
-    insert_tab(tab_name='psm_risk_tab',
-                destination_content='psm_original',
+    insert_tab(tab_name='psm_risk_encode_1',
+                destination_content='psm_original_encode',
                 destination_type='.txt',
-                output='psm_reg.tex')
+                output='psm_reg_encode.tex')
     
-    insert_tab(tab_name='psm_time_tab',
-               destination_content='psm_reg',
+    insert_tab(tab_name='psm_risk_encode_2',
+               destination_content='psm_reg_encode',
                destination_type='.tex',
-               output='psm_reg.tex')
+               output='psm_reg_encode.tex')
+    
+
+    insert_tab(tab_name='psm_risk_willingness',
+                destination_content='psm_original_willingness',
+                destination_type='.txt',
+                output='psm_reg_willingness.tex')
+    
+    insert_tab(tab_name='psm_time_willingness',
+               destination_content='psm_reg_willingness',
+               destination_type='.tex',
+               output='psm_reg_willingness.tex')
+    
+    insert_tab(tab_name='psm_risk_incentive',
+                destination_content='psm_original_incentive',
+                destination_type='.txt',
+                output='psm_reg_incentive.tex')
+    
+    insert_tab(tab_name='psm_time_incentive',
+               destination_content='psm_reg_incentive',
+               destination_type='.tex',
+               output='psm_reg_incentive.tex')
+    
+
+    insert_tab(tab_name='probWeigh_tab_ratio',
+                destination_content='probWeigh_original',
+                destination_type='.txt',
+                output='probWeigh_reg_diversif.tex')
+    
+    insert_tab(tab_name='probWeigh_tab_prob',
+               destination_content='probWeigh_reg_diversif',
+               destination_type='.tex',
+               output='probWeigh_reg_diversif.tex')
     
     
     

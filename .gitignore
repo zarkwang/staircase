@@ -1,0 +1,7 @@
+# Python bytecode caches (regenerated automatically on import)
+__pycache__/
+*.pyc
+*.pyo
+
+# VS Code local history snapshots (editor-level backup, not source)
+.history/

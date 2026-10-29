@@ -125,6 +125,12 @@ class choiceModel:
             return logitProb_expanded(params,option_attr['x1'],option_attr['x2'],
                                     option_attr['p1'],option_attr['p2'],
                                     option_attr['t1'],option_attr['t2'])
+        
+        elif self.func == 'rpmLogitProb':
+            return rpmLogitProb(params,option_attr['x1'],option_attr['x2'],
+                                    option_attr['p1'],option_attr['p2'],
+                                    option_attr['t1'],option_attr['t2'])
+
 
     def logLike(self, coefs , w = 1, subsample_idx = None):
 
@@ -141,7 +147,12 @@ class choiceModel:
                 else:
                     option_attr[attr] = var
             
-            p = logitProb(all_args,option_attr['x1'],option_attr['x2'],
+            if self.func == 'logitProb':
+                p = logitProb(all_args,option_attr['x1'],option_attr['x2'],
+                                    option_attr['p1'],option_attr['p2'],
+                                    option_attr['t1'],option_attr['t2'])
+            elif self.func == 'rpmLogitProb':
+                p = rpmLogitProb(all_args,option_attr['x1'],option_attr['x2'],
                                     option_attr['p1'],option_attr['p2'],
                                     option_attr['t1'],option_attr['t2'])
             
@@ -182,6 +193,8 @@ class choiceModel:
     def predict_const(self,new_like):
 
         # new_like: likelihood of each choice calculated based the newly estimated parameters
+        new_like = np.asarray(new_like, dtype=np.float64)
+        choices = np.asarray(self.choice, dtype=np.float64)
 
         n_question = self.choice.shape[1]
 
@@ -192,9 +205,9 @@ class choiceModel:
         else:
             w = np.tile(1/self.pred.size, self.pred.shape) 
 
-        accuracy = np.sum(((self.pred - self.choice) == 0) * w)
-        rmse = np.sum((new_like - self.choice)**2 * w)
-        cross_ent = np.sum((np.log(new_like) * self.choice  + np.log(1 - new_like) * (1 - self.choice)) * w)
+        accuracy = np.sum(((self.pred - choices) == 0) * w)
+        rmse = np.sum((new_like - choices)**2 * w)
+        cross_ent = np.sum((np.log(new_like) * choices  + np.log(1 - new_like) * (1 - choices)) * w)
              
         pred_result = {'accuracy': accuracy,'RMSE': rmse, 'cross-entropy': - cross_ent}
 
@@ -331,6 +344,7 @@ class mixedDiscrete(choiceModel):
         old_obj = self.obj_values.copy()
         new_obj = self.fitEachClass(bounds)
 
+        self.latent_share = np.asarray(self.latent_share, dtype=np.float64)
         new_share = np.round(self.latent_share, 3)
         new_param = dict(zip(self.param_keys, 
                                 np.round(list(self.latent_class.values()), 3)))
@@ -340,7 +354,7 @@ class mixedDiscrete(choiceModel):
             print('Iteration', i)
             print('Class share', new_share)
             print('Class parameter', new_param)
-            print('objective', np.round(new_obj,3))
+            print('objective', new_obj)
             print(self.eval())
 
         while i < max_iter and abs(sum(new_obj) - sum(old_obj)) > tol:
@@ -348,6 +362,7 @@ class mixedDiscrete(choiceModel):
             old_obj = self.obj_values.copy()
             new_obj = self.fitEachClass(bounds)
 
+            self.latent_share = np.asarray(self.latent_share, dtype=np.float64)
             new_share = np.round(self.latent_share, 3)
             new_param = dict(zip(self.param_keys, 
                                  np.round(list(self.latent_class.values()), 3)))
@@ -357,7 +372,7 @@ class mixedDiscrete(choiceModel):
                 print('Iteration', i)
                 print('Class share', new_share)
                 print('Class parameter', new_param)
-                print('objective', np.round(new_obj,3))
+                print('objective', new_obj)
                 print(self.eval())
     
 

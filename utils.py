@@ -17,6 +17,21 @@ def uCRRA(x,coef):
     
     return np.array(x)**coef
 
+# def uCRRA(x, coef):
+#     try:
+#         if isinstance(x[0][0], np.ndarray):
+#             x = np.apply_along_axis(lambda x: x.tolist(), axis=1, arr=x)
+#     except:
+#         pass
+    
+#     x = np.array(x)
+    
+#     if np.isclose(coef, 0):
+#         return np.log(x)
+    
+#     return (x ** coef - 1) / coef
+
+
 # exponential discount function
 def discountExp(t,coef):
     return coef**np.array(t)
@@ -72,7 +87,6 @@ def logitProb_expanded(params,x1,x2,p1=1,p2=1,t1=0,t2=0):
     '''
     This is function is the same as logitProb(.) but the params are random parameters. 
     '''
-
     var_name_list = ['x1', 'x2', 'p1', 'p2', 't1', 't2']
     coef_name_list = list(params.keys())
     vars = {}
@@ -159,6 +173,46 @@ def logitProb_expanded(params,x1,x2,p1=1,p2=1,t1=0,t2=0):
     prob = 1/(1+ np.exp(-u_diff /temp))
 
     return prob
+
+    
+
+
+
+# ---------------------------------------------
+#    Random Parameter Model - Risk Preference
+# ---------------------------------------------
+def riskBalanceParam(x1,x2,p1,p2):
+    return - np.log(p1/p2)/np.log(x1/x2)
+
+
+def rpmLogitProb(params,x1,x2,p1=1,p2=1,t1=0,t2=0):
+        
+        '''
+        Each choice involves two options
+            option 1: (x1,p1)
+            option 2: (x2,p2)
+        x is the amounts, p is the probabilities
+
+        balanced_param is the paramaters which make u(x1,p1)=u(x2,p2)
+
+        param_diff = target_param - balanced_param
+
+        choice probability for option 1: 
+            P(A) = sigmoid(- param_diff / temp )
+        where temp is the temperature parameter
+    '''
+
+        
+        target_param = params['riskCoef']
+        balanced_param = riskBalanceParam(x1,x2,p1,p2)
+
+        param_diff = (target_param - balanced_param)
+
+        prob = 1/(1 + np.exp(- param_diff / params['temp']))
+
+        return prob
+
+
 
 
 # -----------------------------
@@ -266,12 +320,12 @@ class proportionTest:
 
             new_table = [sum(self.tab_count[x:x + 2**i]) for x in range(0, len(self.tab_count), 2**i)]
 
-            max_group = len(self.tab_count) // ((i + 1) * 4) - 1
+            num_groups = len(new_table) // 4
 
             # Iterate over groups
-            for g in range(int(max_group) + 1):
+            for g in range(num_groups):
                 # Select the current group of 4 elements
-                node_count = new_table[4 * g:4 * g + 4]
+                node_count = new_table[4*g : 4*g + 4]
 
                 if hide == False:
                     print(f"Testing layer {max_layer - i}, group {g + 1}")
